@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💊 약손 건강 분석기</title> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+    <style>
+        /* 새로운 디자인 시스템 */
+        :root {
+            --color-emerald-50: #ecfdf5;
+            --color-emerald-100: #d1fae5;
+            --color-emerald-200: #a7f3d0;
+            --color-emerald-600: #059669;
+            --color-emerald-700: #047857;
+            --color-emerald-800: #065f46;
+            --color-emerald-900: #064e3b;
+            --color-teal-50: #f0fdfa;
+            --color-teal-800: #115e59;
+            --color-amber-50: #fffbeb;
+            --color-amber-200: #fde68a;
+            --color-amber-600: #d97706;
+            --color-amber-800: #92400e;
+            --color-red-200: #fecaca;
+            --color-red-600: #dc2626;
+            --color-red-800: #991b1b;
+            --color-blue-200: #bfdbfe;
+            --color-blue-600: #2563eb;
+            --color-blue-800: #1e40af;
+            --color-orange-200: #fed7aa;
+            --color-orange-600: #ea580c;
+            --color-orange-800: #9a3412;
+            --radius: 0.5rem;
+            /* 글자 크기 조절을 위한 기본 폰트 사이즈 변수 추가 */
+            --base-font-size: 16px;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(to bottom right, var(--color-emerald-50), #ffffff, var(--color-teal-50));
+            color: #1f2937;
+            overflow-x: hidden; 
+            /* JavaScript로 조절될 폰트 크기 설정 */
+            font-size: var(--base-font-size); 
+            line-height: 1.5;
+            scroll-behavior: smooth;
+            min-height: 100vh;
+            transition: font-size 0.3s ease; /* 폰트 크기 변경 시 애니메이션 */
+        }
+
+        .container {
+            max-width: 896px;
+            margin: 0 auto 24px;
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            padding: 24px;
+            border-radius: var(--radius);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            position: relative;
+            border: 1px solid var(--color-emerald-200);
+        }
+        
+        /* 로고 및 헤더 */
+        .logo-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .logo-header img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            vertical-align: middle;
+            margin-right: 12px;
+        }
+        .logo-header h2 {
+            display: inline-block;
+            font-size: 1.25em; /* em으로 수정 */
+            font-weight: 500;
+            margin: 0;
+            vertical-align: middle;
+            color: var(--color-emerald-700);
+        }
+
+        h1 {
+            color: var(--color-emerald-800);
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 1.5em; /* em으로 수정 */
+            font-weight: 500;
+        }
+
+        /* 입력 요소 스타일 */
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            border: 1px solid var(--color-emerald-200);
+            border-radius: var(--radius);
+            background-color: #ffffff;
+            font-size: 1em; /* body font-size에 반응하도록 em 사용 */
+            color: #1f2937;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px 24px;
+            background-color: var(--color-emerald-600);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            margin-bottom: 12px;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            background-color: var(--color-emerald-700);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* --- 새 기능 CSS 시작 --- */
+
+        /* 글자 크기 조절 버튼 스타일 */
+        .font-size-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            padding: 10px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .font-size-controls button {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            margin: 0;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            font-size: 1.2em;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+            box-shadow: none; /* 사이드바 버튼은 그림자 제거 */
+        }
+
+        .font-size-controls button:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: none;
+        }
+
+        /* 튜토리얼 페이지 스타일 */
+        .tutorial-step {
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--color-emerald-200);
+            border-radius: var(--radius);
+            background-color: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+        }
+        
+        .tutorial-step:hover {
+            transform: translateY(-3px);
+        }
+        
+        .tutorial-step h3 {
+            color: var(--color-emerald-700);
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.1em; /* em으로 수정 */
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .tutorial-step h3::before {
+            content: '👉';
+            font-size: 1.2em;
+        }
+        
+        .tutorial-step strong {
+            font-weight: 700; /* 볼드체 강조 */
+            color: var(--color-emerald-800);
+        }
+
+        /* 구매 링크 버튼 스타일 */
+        .purchase-link-button {
+            width: 100%;
+            padding: 12px 24px;
+            background-color: #ffc107; /* 밝은 노란색/골드 */
+            color: #374151; /* 짙은 텍스트 */
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 1em; /* em으로 수정 */
+            font-weight: 600;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            margin-top: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 8px rgba(255, 193, 7, 0.4);
+            text-decoration: none; /* a 태그 기본 스타일 제거 */
+        }
+        
+        .purchase-link-button:hover {
+            background-color: #f39c12; /* 호버 시 주황색 계열로 변경 */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(243, 156, 18, 0.6);
+        }
+
+        /* --- 새 기능 CSS 끝 --- */
+
+        #result {
+            margin-top: 24px;
+            padding: 24px;
+            border-top: 2px solid var(--color-emerald-200);
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: var(--radius);
+            min-height: 100px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .section-title {
+            color: var(--color-emerald-800);
+            font-size: 1.15em; /* em으로 수정 */
+            font-weight: 500;
+            margin-top: 20px;
+            margin-bottom: 12px;
+            border-bottom: 2px solid var(--color-emerald-200);
+            padding-bottom: 8px;
+        }
+
+        #loading {
+            text-align: center;
+            font-size: 1em;
+            color: var(--color-emerald-600);
+            display: none;
+            padding: 24px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        #loading::before {
+            content: '';
+            display: block;
+            width: 32px;
+            height: 32px;
+            margin: 0 auto 12px;
+            border: 4px solid var(--color-emerald-600);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        /* 메뉴 아이콘 */
+        .menu-icon {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--color-emerald-700);
+            z-index: 100;
+            padding: 8px;
+            border-radius: var(--radius);
+            transition: all 0.2s ease;
+        }
+
+        .menu-icon:hover {
+            background-color: var(--color-emerald-50);
+        }
+
+        /* 사이드바 */
+        .sidebar {
+            height: 100%;
+            width: 0; 
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            right: 0;
+            background: linear-gradient(to bottom right, var(--color-emerald-900), var(--color-teal-800));
+            overflow-x: hidden;
+            transition: width 0.3s ease;
+            padding-top: 60px;
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar a {
+            padding: 16px 24px;
+            text-decoration: none;
+            font-size: 1em; /* em으로 수정 */
+            color: rgba(236, 253, 245, 0.9);
+            display: block;
+            transition: all 0.2s ease;
+            border-radius: 0;
+        }
+
+        .sidebar a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding-left: 28px;
+        }
+
+        .sidebar .closebtn {
+            position: absolute;
+            top: 12px;
+            right: 24px;
+            font-size: 32px;
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        /* 스플래시 스크린 */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom right, var(--color-emerald-600), #14b8a6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 2000;
+            color: #ffffff;
+            transition: opacity 1s ease-out;
+        }
+
+        #splash-screen img {
+            width: 128px;
+            height: 128px;
+            object-fit: contain;
+            animation: pulse 2s infinite;
+            margin-bottom: 24px;
+        }
+
+        #splash-screen h1 {
+            color: #ffffff;
+            font-size: 2em; /* em으로 수정 */
+            margin-bottom: 12px;
+        }
+
+        #splash-screen p {
+            font-size: 1.125em; /* em으로 수정 */
+            color: var(--color-emerald-100);
+            margin-bottom: 24px;
+        }
+
+        #splash-screen::after {
+            content: '';
+            display: block;
+            width: 32px;
+            height: 32px;
+            border: 4px solid #ffffff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        #main-content-wrapper {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            padding: 24px; 
+            min-height: 100vh; 
+        }
+        
+        /* 피드백 폼 */
+        #feedbackForm {
+            border: 1px solid var(--color-orange-200);
+            padding: 24px;
+            border-radius: var(--radius);
+            box-shadow: 0 4px 12px rgba(234, 88, 12, 0.1);
+            background-color: rgba(254, 215, 170, 0.1);
+            backdrop-filter: blur(12px);
+            margin-top: 24px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        #feedbackForm h2 {
+            color: var(--color-orange-800);
+            margin-bottom: 16px;
+        }
+
+        #feedbackForm button {
+            background-color: var(--color-orange-600);
+        }
+
+        #feedbackForm button:hover {
+            background-color: #c2410c;
+        }
+
+        #feedbackMessage {
+            color: var(--color-emerald-600);
+            text-align: center;
+            margin-top: 16px;
+            padding: 12px;
+            background-color: var(--color-emerald-50);
+            border-radius: var(--radius);
+            border: 1px solid var(--color-emerald-200);
+        }
+        
+        /* 페이지 콘텐츠 */
+        .page-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        
+        /* 별점 */
+        .star-rating {
+            font-size: 2em; /* em으로 수정 */
+            cursor: pointer;
+            color: #d1d5db;
+            margin-bottom: 16px;
+            display: inline-block;
+        }
+
+        .star-rating .fa-star {
+            transition: color 0.2s ease;
+            margin: 0 4px;
+        }
+
+        .star-rating .fa-star.checked {
+            color: #fbbf24;
+        }
+
+        .star-rating .fa-star:hover {
+            color: #fcd34d;
+        }
+        
+        /* 개발자 목록 */
+        .developer-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .developer-list li {
+            padding: 12px 0;
+            border-bottom: 1px dashed var(--color-emerald-200);
+        }
+
+        .developer-list li:last-child {
+            border-bottom: none;
+        }
+        
+        /* 스크롤바 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #10b981;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--color-emerald-700);
+        }
+
+        /* 푸터 */
+        footer {
+            text-align: center;
+            margin-top: 80px;
+            padding: 32px 24px;
+            font-size: 0.875em; /* em으로 수정 */
+            color: #6b7280;
+            border-top: 1px solid var(--color-emerald-100);
+            background-color: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(8px);
+        }
+
+        footer hr {
+            border: none;
+            border-top: 1px solid var(--color-emerald-100);
+            margin-bottom: 16px;
+        }
+
+        footer p {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+        /* 결과 카드 스타일 개선 */
+        #result p {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+        #result strong {
+            color: var(--color-emerald-800);
+        }
+
+        /* 분석 상세 내역 스타일 */
+        #result > div {
+            padding: 16px;
+            background-color: rgba(236, 253, 245, 0.3);
+            border-left: 4px solid var(--color-emerald-200);
+            border-radius: 0 var(--radius) var(--radius) 0;
+            margin: 12px 0;
+        }
+
+        /* 버튼 그룹 */
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .button-group button {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        /* 안전도별 색상 */
+        .safety-safe {
+            color: #10b981 !important;
+        }
+
+        .safety-warning {
+            color: #f59e0b !important;
+        }
+
+        .safety-danger {
+            color: #ef4444 !important;
+        }
+
+        /* 보고서 및 커뮤니티 페이지 스타일 */
+        #reportList, #reviewList {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--color-emerald-200);
+        }
+
+        #reportList > div, #reviewList > div {
+            padding: 16px;
+            margin: 12px 0;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: var(--radius);
+            border-left: 3px solid var(--color-emerald-600);
+        }
+        
+        /* 튜토리얼 페이지 스타일 */
+        .tutorial-step {
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--color-emerald-200);
+            border-radius: var(--radius);
+            background-color: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+        }
+        
+        .tutorial-step:hover {
+            transform: translateY(-3px);
+        }
+        
+        .tutorial-step h3 {
+            color: var(--color-emerald-700);
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.1em; /* em으로 수정 */
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .tutorial-step h3::before {
+            content: '👉';
+            font-size: 1.2em;
+        }
+        
+        .tutorial-step strong {
+            font-weight: 700; /* 볼드체 강조 */
+            color: var(--color-emerald-800);
+        }
+        
+        /* 구매 링크 버튼 스타일 */
+        .purchase-link-button {
+            width: 100%;
+            padding: 12px 24px;
+            background-color: #ffc107; /* 밝은 노란색/골드 */
+            color: #374151; /* 짙은 텍스트 */
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 1em; /* em으로 수정 */
+            font-weight: 600;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            margin-top: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 8px rgba(255, 193, 7, 0.4);
+            text-decoration: none; /* a 태그 기본 스타일 제거 */
+        }
+        
+        .purchase-link-button:hover {
+            background-color: #f39c12; /* 호버 시 주황색 계열로 변경 */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(243, 156, 18, 0.6);
+        }
+
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.25em; /* em으로 수정 */
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 0 !important;
+            }
+
+            .sidebar.open {
+                width: 250px !important;
+            }
+        }
+
+        /* HR 스타일 */
+        hr {
+            border: none;
+            border-top: 1px solid var(--color-emerald-200);
+            margin: 24px 0;
+        }
+
+        /* Label 스타일 */
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--color-emerald-800);
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div id="splash-screen">
+        <img src="assets/my_logo.png" alt="약손 앱 로고" /> 
+        <h1>약손 건강 분석기</h1>
+        <p>신뢰할 수 있는 건강 정보 분석</p>
+    </div>
+
+    <div id="mySidebar" class="sidebar">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+        <a href="javascript:void(0)" onclick="showPage('main-page');">🏠 메인 화면</a> 
+        <a href="javascript:void(0)" onclick="showPage('tutorial-page');">💡 튜토리얼</a> 
+        <a href="javascript:void(0)" onclick="showPage('report-page');">🚨 오류 신고</a> 
+        <a href="javascript:void(0)" onclick="showPage('community-page');">💬 커뮤니티</a> 
+        <a href="javascript:void(0)" onclick="showPage('about-page');">ℹ️ 앱 정보 및 개발자</a> 
+        
+        <div style="padding: 16px 24px; color: #ffffff; font-size: 1em; font-weight: 500;">
+            글자 크기 조절
+            <div class="font-size-controls">
+                <button onclick="changeFontSize(-2)">A-</button>
+                <button onclick="changeFontSize(0)">A</button>
+                <button onclick="changeFontSize(2)">A+</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="main-content-wrapper">
+        <span class="menu-icon" onclick="openNav()"><i class="fa fa-bars"></i></span>
+        
+        <div id="main-page" class="container page-content">
+            <div class="logo-header">
+                <img src="assets/my_logo.png" alt="상단 로고" />
+                <h2>약손 건강 분석기</h2>
+            </div>
+
+            <h1>💊 건강 도우미에게 물어보기</h1>
+            <input type="text" id="productInput" placeholder="제품명 또는 구매 링크를 입력하세요! (예: 종근당 락토핏 골드)" required>
+            <button onclick="analyzeProduct()">
+                <i class="fa fa-search"></i>
+                <span>분석 시작!</span>
+            </button>
+            
+            <div id="loading">분석 중입니다... 잠시만 기다려주세요.</div>
+
+            <div id="result"></div>
+
+            <div id="feedbackForm" style="display: none;">
+                <h2>정보 수정 요청하기</h2>
+                <select id="feedbackType">
+                    <option value="">선택</option>
+                    <option value="name_wrong">① 제품 이름이 다름</option>
+                    <option value="ad_wrong">② 광고 내용이 잘못 분석됨</option>
+                    <option value="registered">③ 공식 등록이 되어 있음</option>
+                    <option value="other">④ 기타 (직접 입력)</option>
+                </select>
+                <textarea id="feedbackComment" placeholder="상세 의견을 입력해 주세요 (선택)"></textarea>
+                <input type="text" id="feedbackContact" placeholder="전화번호 또는 이메일 (필수)" required>
+                <button onclick="submitFeedback()">요청 제출하기</button>
+                <p id="feedbackMessage" style="display: none;"></p>
+            </div>
+        </div>
+        
+        <div id="tutorial-page" class="container page-content">
+            <h1>💡 약손 분석기 사용법 (5단계)</h1>
+            <p style="text-align: center; color: #6b7280; margin-bottom: 24px;">'약손'을 100% 활용하여 건강 정보를 확인해 보세요.</p>
+            
+            <div class="tutorial-step">
+                <h3>1단계: 제품명 또는 링크 입력</h3>
+                <p>메인 화면의 입력창에 분석하고 싶은 **건강기능식품의 제품명**을 입력하세요. 온라인 구매 링크를 직접 복사하여 붙여넣어도 분석을 시도합니다. <br>예: **종근당 락토핏 골드**</p>
+            </div>
+            
+            <div class="tutorial-step">
+                <h3>2단계: 분석 시작 버튼 클릭</h3>
+                <p>**분석 시작 버튼**을 누르면 인공지능이 식약처 데이터베이스와 광고 문구를 기반으로 **8단계 신뢰도 검증**을 시작합니다. 잠시 기다려 주세요.</p>
+            </div>
+            
+            <div class="tutorial-step">
+                <h3>3단계: 최종 신뢰도 판정 확인</h3>
+                <p>결과창 상단에서 제품의 **최종 신뢰도**와 **총점 (100점 만점)**을 확인하세요. 판정은 **안전, 주의, 위험** 세 가지로 분류됩니다. 특히 **위험 판정**이 나온 경우 신중하게 판단해야 합니다.</p>
+            </div>
+            
+            <div class="tutorial-step">
+                <h3>4단계: 상세 분석 내역 검토</h3>
+                <p>결과에 포함된 **상세 분석 내역** 섹션에서 각 8단계 항목별 점수와 판정 근거를 확인하세요. 광고의 **과장성**, 성분의 **공식 효능 인정 여부** 등을 구체적으로 알 수 있습니다.</p>
+            </div>
+            
+            <div class="tutorial-step">
+                <h3>5단계: 커뮤니티 활용 및 피드백</h3>
+                <p>결과가 부정확하다고 판단되면 **'결과가 정확하지 않나요?'** 버튼을 통해 피드백을 주세요. 또한, **커뮤니티** 페이지에서 다른 사용자들의 **실제 평가**를 참고하여 최종 결정을 내리세요.</p>
+            </div>
+        </div>
+
+        <div id="report-page" class="container page-content">
+            <h1>🚨 오류 신고</h1>
+            <p style="text-align: center; color: #6b7280; margin-bottom: 24px;">분석 오류나 버그를 신고해주세요</p>
+            
+            <hr>
+            <input type="text" id="reportTitle" placeholder="제목을 입력해 주세요">
+            <textarea id="reportContent" placeholder="상세 내용 (제품명, 문제점 등)을 입력해 주세요" rows="5"></textarea>
+            <input type="text" id="reportContact" placeholder="연락처 (이메일 또는 전화번호)">
+            <button onclick="submitReport()">
+                <i class="fa fa-paper-plane"></i>
+                <span>신고 접수하기</span>
+            </button>
+
+            <div id="reportList">
+                <p style="color: #6b7280;">** 실제 게시판 기능은 서버 구축이 필요합니다. 현재는 임시 접수 기능만 작동합니다. **</p>
+                <div><strong>[공지]</strong> 오류 신고 시 정확한 제품 정보를 함께 알려주세요.</div>
+            </div>
+        </div>
+
+        <div id="community-page" class="container page-content">
+            <h1>💬 커뮤니티 평가</h1>
+            <p style="text-align: center; color: #6b7280; margin-bottom: 24px;">제품에 대한 평가를 남겨주세요</p>
+
+            <hr>
+            <input type="text" id="communityProduct" placeholder="평가할 제품명을 입력하세요 (예: 종근당 락토핏)">
+            
+            <label>별점 평가:</label>
+            <div id="starRating" class="star-rating">
+                <span class="fa fa-star" data-rating="1" onclick="setRating(1)"></span>
+                <span class="fa fa-star" data-rating="2" onclick="setRating(2)"></span>
+                <span class="fa fa-star" data-rating="3" onclick="setRating(3)"></span>
+                <span class="fa fa-star" data-rating="4" onclick="setRating(4)"></span>
+                <span class="fa fa-star" data-rating="5" onclick="setRating(5)"></span>
+            </div>
+            <input type="hidden" id="currentRating" value="0">
+            <textarea id="communityComment" placeholder="제품에 대한 간단한 의견을 남겨주세요" rows="3"></textarea>
+            <button onclick="submitReview()">
+                <i class="fa fa-star"></i>
+                <span>평가 등록하기</span>
+            </button>
+
+            <div id="reviewList">
+                <p style="color: #6b7280;">** 실제 평가 목록 표시는 서버 구축이 필요합니다. **</p>
+                <div><strong>종근당 락토핏</strong> (⭐⭐⭐⭐) - 만족하며 먹고 있어요!</div>
+            </div>
+        </div>
+
+        <div id="about-page" class="container page-content">
+            <div class="logo-header">
+                <img src="assets/my_logo.png" alt="앱 로고" style="width: 96px; height: 96px; display: block; margin: 0 auto 24px;" />
+            </div>
+
+            <h1>ℹ️ 약손 건강 분석기</h1>
+
+            <div class="section-title">📱 개발 목적</div>
+            <p style="line-height: 1.8; color: #374151;">
+                최근 범람하는 건강 기능 식품 광고 중에는 정보의 비대칭성을 악용한 허위 및 과장 광고가 심각한 사회적 문제로 대두되고 있습니다. 
+                저희 '약손'은 이러한 소비자의 불안과 피해를 최소화하고, 과학적 근거와 공공 데이터에 기반하여 광고의 신뢰도를 객관적으로 검증하는 
+                강력한 예방책을 제공하고자 개발되었습니다. 소비자들이 현명한 선택을 할 수 있도록 돕는 것이 약손의 가장 큰 개발 목표입니다.
+            </p>
+
+            <div class="section-title">👨‍💻 주요 참여진</div>
+            <ul class="developer-list">
+                <li><strong>개발 담당:</strong> 주정우</li>
+                <li><strong>기획/분석 담당:</strong> 김명준, 박건우</li>
+            </ul>
+
+            <div class="section-title">🔬 기술 기반</div>
+            <p style="line-height: 1.8; color: #374151;">
+                본 서비스는 Google Gemini API를 활용한 정교한 프롬프트 엔지니어링과 식약처 공공데이터 기반의 분석 알고리즘으로 구동됩니다.
+            </p>
+
+            <div class="section-title">⚠️ 면책사항</div>
+            <p style="line-height: 1.8; color: #374151;">
+                본 서비스는 의료 진단이나 처방을 대체할 수 없으며, 참고 목적으로만 사용되어야 합니다. 
+                건강과 관련된 중요한 결정은 반드시 의료 전문가와 상담하시기 바랍니다.
+            </p>
+        </div>
+        
+        <footer>
+            <hr>
+            <p>※ 약손은 의료 진단 서비스가 아닌, 광고 정보 검증을 위한 참고 도구입니다.</p>
+            <p>※ 본 서비스는 식약처 공공데이터 및 검증된 AI 알고리즘에 기반합니다.</p>
+            <p style="color: #9ca3af;">© 2025 YAKSON – Developed under Yonsei RC Creative Platform</p>
+        </footer>
+    </div>
+
+    <script>
+        // (추가) 글자 크기 조절을 위한 변수 및 로컬 스토리지 로드
+        let currentFontSizePx = 16; 
+        
+        // 1. 스플래시 화면 및 메인 화면 제어
+        document.addEventListener('DOMContentLoaded', () => {
+            const splashScreen = document.getElementById('splash-screen');
+            const mainContentWrapper = document.getElementById('main-content-wrapper');
+            
+            // (추가) 로컬 스토리지에서 저장된 폰트 크기를 로드합니다.
+            const savedFontSize = localStorage.getItem('yaksonFontSize');
+            if (savedFontSize) {
+                currentFontSizePx = parseInt(savedFontSize);
+                document.body.style.fontSize = `${currentFontSizePx}px`;
+            }
+
+            setTimeout(() => {
+                splashScreen.style.opacity = '0'; 
+                setTimeout(() => {
+                    splashScreen.style.display = 'none';
+                    mainContentWrapper.style.opacity = '1';
+                    document.getElementById('main-page').style.display = 'block'; 
+                }, 1000);
+            }, 2000); 
+        });
+
+        // 2. 사이드바 메뉴 열기/닫기 함수
+        function openNav() {
+            document.getElementById("mySidebar").style.width = "280px";
+            document.getElementById("mySidebar").classList.add('open');
+        }
+
+        function closeNav() {
+            document.getElementById("mySidebar").style.width = "0";
+            document.getElementById("mySidebar").classList.remove('open');
+        }
+        
+        // 3. (추가) 글자 크기 조절 함수
+        function changeFontSize(change) {
+            if (change === 0) {
+                // 초기화 (16px)
+                currentFontSizePx = 16;
+            } else {
+                // 최소 12px, 최대 22px 제한
+                const newSize = currentFontSizePx + change;
+                if (newSize >= 12 && newSize <= 22) {
+                    currentFontSizePx = newSize;
+                }
+            }
+            
+            document.body.style.fontSize = `${currentFontSizePx}px`;
+            localStorage.setItem('yaksonFontSize', currentFontSizePx);
+        }
+        
+        // 4. 페이지 전환 함수
+        function showPage(pageId) {
+            closeNav(); 
+            
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.style.display = 'none';
+            });
+
+            document.getElementById(pageId).style.display = 'block';
+            window.scrollTo(0, 0); 
+        }
+        
+        // 5. 분석 기능 함수 (구매 링크 버튼 추가)
+async function analyzeProduct() {
+            if (document.getElementById('main-page').style.display === 'none') {
+                return;
+            }
+
+            const productInfo = document.getElementById('productInput').value.trim();
+            const resultDiv = document.getElementById('result');
+            const loadingDiv = document.getElementById('loading');
+            const feedbackForm = document.getElementById('feedbackForm');
+
+            if (!productInfo) {
+                alert('제품 정보를 입력해주세요.');
+                return;
+            }
+            
+            // (추가된 로직 시작) YouTube 링크 감지 및 경고
+            const isYoutubeVideo = productInfo.includes('youtube.com/') || productInfo.includes('youtu.be/');
+
+            if (isYoutubeVideo) {
+                // 사용자가 링크를 입력했을 때 분석 방식의 차이를 미리 알림
+                const confirmAnalysis = confirm(
+                    "YouTube 영상 링크를 감지했습니다.\n\n[주의] 영상 광고 내용 분석 대신, 영상 속 **'제품 이름'**을 추출하여 **웹 서핑 기반의 제품 신뢰도**를 조사합니다.\n\n분석을 진행하시겠습니까?"
+                );
+                
+                if (!confirmAnalysis) {
+                    return; // 사용자가 취소하면 분석 중단
+                }
+            }
+            // (추가된 로직 끝)
+
+            resultDiv.innerHTML = '';
+            feedbackForm.style.display = 'none'; 
+            loadingDiv.style.display = 'block'; 
+
+            try {
+                // (기존 로직 유지) 서버 API 호출
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ productInfo: productInfo })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`서버 오류: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // 점수별 색상 클래스
+                let safetyClass, safetyColor;
+                if (data.overallSafety === '안전') {
+                    safetyClass = 'safety-safe';
+                    safetyColor = '#10b981';
+                } else if (data.overallSafety === '주의') {
+                    safetyClass = 'safety-warning';
+                    safetyColor = '#f59e0b';
+                } else {
+                    safetyClass = 'safety-danger';
+                    safetyColor = '#ef4444';
+                }
+                
+                // 상세 분석 내용 HTML 생성
+                let detailsHtml = '';
+                // YouTube 분석 시에는 8단계 중 5단계까지만 의미있으므로, 제목을 동적으로 변경합니다.
+                let stepNames;
+
+                if (isYoutubeVideo) {
+                     // YouTube 웹 서핑 분석용 단계 이름 (5단계까지만 중요)
+                    stepNames = [
+                        '제품명 추출 및 식별 (총점 10점)',
+                        '공신력 있는 리뷰/기사 검색 (총점 25점)',
+                        '식약처 등록 및 안전성 이력 (총점 30점)',
+                        '성분 기반 효능 재검증 (총점 20점)',
+                        '가격 합리성 및 시장 포지션 (총점 15점)',
+                        '행동 유도 검증 (총점 0점)',
+                        '시각적 신호 검증 (총점 0점)',
+                        '사기·금전 피해 유도 가능성 검증 (총점 0점)'
+                    ];
+                } else {
+                    // 기존 광고 분석용 단계 이름 (8단계 모두 중요)
+                    stepNames = [
+                        '제품 식별 (유형 분류)',
+                        '발신자 신뢰도 (총점 15점)',
+                        '제품 신뢰도 (총점 25점)',
+                        '표현/내용 검증 (총점 20점)',
+                        '효능/성분 위반 (총점 20점)',
+                        '행동 유도 검증 (총점 10점)',
+                        '시각적 신호 검증 (총점 5점)',
+                        '사기·금전 피해 유도 가능성 검증 (총점 5점)'
+                    ];
+                }
+
+
+                for (let i = 1; i <= 8; i++) {
+                    const analysisKey = Object.keys(data.analysisDetails).find(k => k.startsWith(`step${i}_`));
+                    const stepData = analysisKey ? data.analysisDetails[analysisKey] : null;
+                    
+                    if (stepData) {
+                        const displayValue = stepData.result || stepData.score || 'N/A';
+                        const reason = stepData.reason ? stepData.reason.replace(/\n/g, '<br>') : '설명 없음';
+                        const valueColor = displayValue.includes('/') ? '#ef4444' : '#065f46';
+
+                        detailsHtml += `
+                            <div style="padding: 16px; background-color: rgba(236, 253, 245, 0.3); border-left: 4px solid var(--color-emerald-200); border-radius: 0 var(--radius) var(--radius) 0; margin: 12px 0;">
+                                <p style="margin-bottom: 8px;"><strong>${i}. ${stepNames[i-1]}:</strong> <span style="font-weight: 600; color: ${valueColor};">${displayValue}</span></p>
+                                <p style="margin-left: 20px; font-size: 0.9em; color: #6b7280;">- ${reason}</p>
+                            </div>
+                        `;
+                    }
+                }
+
+                // 결과 표시
+                resultDiv.innerHTML = `
+                    <div class="section-title">✨ 분석 대상 제품</div>
+                    <p><strong>${data.productInfo}</strong></p>
+                    <p style="font-size: 0.9em; color: #6b7280; margin-top: 4px;">유형: ${data.productType || '정보 없음'}</p>
+                    
+                    ${isYoutubeVideo ? `<p style="font-size: 0.9em; color: #dc2626; margin-top: 10px;">🚨 **웹 서핑 기반 분석 결과** (영상 광고는 무시됨)</p>` : ''}
+
+                    <div class="section-title" style="margin-top: 24px; font-size: 1.25em; color: ${safetyColor};">
+                        🚨 최종 신뢰도: <strong class="${safetyClass}">${data.overallSafety}</strong>
+                    </div>
+                    <p style="font-size: 1.5em; font-weight: 600; text-align: center; margin: 16px 0; color: ${safetyColor};">${data.totalScore}/100점</p>
+                    <p style="line-height: 1.6;"><strong>판정 근거:</strong> ${data.safetyReason.replace(/\n/g, '<br>')}</p>
+                    
+                    <div class="section-title">🔬 상세 분석 내역</div>
+                    <div style="font-size: 0.95em;">
+                        ${detailsHtml}
+                    </div>
+                    
+                    <div class="section-title" style="color: var(--color-amber-800); border-color: var(--color-amber-200);">⚠️ 복용 시 유의 사항</div>
+                    <div style="padding: 16px; background-color: rgba(255, 251, 235, 0.5); border-left: 4px solid var(--color-amber-200); border-radius: 0 var(--radius) var(--radius) 0; line-height: 1.6;">
+                        <p>${data.precautions ? data.precautions.replace(/\n/g, '<br>') : '제공된 유의사항이 없습니다.'}</p>
+                    </div>
+                    
+                    <hr style="margin-top: 32px;">
+                    
+                    <a href="https://www.coupang.com/" target="_blank" class="purchase-link-button">
+                        <i class="fa fa-shopping-bag"></i>
+                        <span>🛍️ 추천 구매 링크 바로가기 (쿠팡)</span>
+                    </a>
+
+                    <div class="button-group">
+                        <button style="background-color: #3b82f6; border: 1px solid #2563eb;" onclick="saveResult()">
+                            <i class="fa fa-share-alt"></i>
+                            <span>결과 저장 / 공유</span>
+                        </button>
+                        <button style="background-color: #6b7280; border: 1px solid #4b5563;" onclick="showFeedbackForm()">
+                            결과가 정확하지 않나요?
+                        </button>
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error('분석 요청 실패:', error);
+                resultDiv.innerHTML = `<div style="padding: 20px; background-color: #fee2e2; color: #991b1b; border-radius: var(--radius); border-left: 4px solid #dc2626;"><p><strong>요청 실패:</strong> ${error.message}</p><p style="margin-top: 8px; font-size: 0.9em;">서버가 켜져 있는지, API 키가 유효한지 확인해주세요.</p></div>`;
+            } finally {
+                loadingDiv.style.display = 'none'; 
+            }
+        }
+        // 6. 피드백 폼 표시
+        function showFeedbackForm() {
+            document.getElementById('feedbackForm').style.display = 'block';
+            document.getElementById('feedbackForm').scrollIntoView({ behavior: 'smooth', block: 'start' }); 
+        }
+
+        // 7. 피드백 제출
+        function submitFeedback() {
+            const contact = document.getElementById('feedbackContact').value.trim();
+            const message = document.getElementById('feedbackMessage');
+
+            if (!contact) {
+                alert("전화번호 또는 이메일은 필수 입력 항목입니다.");
+                return;
+            }
+
+            message.textContent = "요청이 접수되었습니다. 검토 후 수정되면 알려드릴게요.";
+            message.style.display = 'block';
+            
+            document.getElementById('feedbackType').value = '';
+            document.getElementById('feedbackComment').value = '';
+            document.getElementById('feedbackContact').value = '';
+
+            setTimeout(() => {
+                document.getElementById('feedbackForm').style.display = 'none';
+                message.style.display = 'none';
+            }, 4000);
+        }
+
+        // 8. 결과 저장
+        function saveResult() {
+            alert("결과 저장/공유 기능은 현재 개발 중입니다.");
+        }
+        
+        // 9. 오류 신고
+        function submitReport() {
+            const title = document.getElementById('reportTitle').value.trim();
+            const content = document.getElementById('reportContent').value.trim();
+            const contact = document.getElementById('reportContact').value.trim();
+
+            if (!title || !content || !contact) {
+                alert("제목, 내용, 연락처를 모두 입력해 주세요.");
+                return;
+            }
+            
+            alert(`신고가 접수되었습니다!\n제목: ${title}\n내용: ${content.substring(0, 30)}...\n연락처: ${contact}`);
+            
+            document.getElementById('reportTitle').value = '';
+            document.getElementById('reportContent').value = '';
+            document.getElementById('reportContact').value = '';
+        }
+
+        // 10. 별점 설정
+        function setRating(rating) {
+            document.getElementById('currentRating').value = rating;
+            const stars = document.getElementById('starRating').children;
+            for (let i = 0; i < stars.length; i++) {
+                stars[i].classList.remove('checked');
+                if (i < rating) {
+                    stars[i].classList.add('checked');
+                }
+            }
+        }
+        
+        // 11. 리뷰 제출
+        function submitReview() {
+            const product = document.getElementById('communityProduct').value.trim();
+            const rating = document.getElementById('currentRating').value;
+            const comment = document.getElementById('communityComment').value.trim();
+
+            if (!product || rating === '0') {
+                alert("제품명과 별점을 선택해 주세요.");
+                return;
+            }
+
+            alert(`평가가 등록되었습니다! \n제품: ${product}\n별점: ${rating}점\n의견: ${comment}`);
+            
+            document.getElementById('communityProduct').value = '';
+            setRating(0);
+            document.getElementById('communityComment').value = '';
+        }
+    </script>
+</body>
+</html>
