@@ -1054,6 +1054,27 @@ font-size:22px;
 .field input { position: relative; z-index: 1; }
 .lefticon    { z-index: 0; }
 
+/* 🌙 다크모드에서 복용 시 유의사항 박스 자동 보정 */
+@media (prefers-color-scheme: dark) {
+  /* 제목 */
+  .section-title {
+    color: #f1f3ec !important;
+  }
+
+  /* 박스 전체 */
+  .section-title + div {
+    background: linear-gradient(135deg, #2f3a2f, #2c322a) !important;
+    border: 1.5px solid #3b4a3d !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .5) !important;
+    color: #f1f3ec !important;
+  }
+
+  /* 박스 안의 모든 텍스트 */
+  .section-title + div * {
+    color: #f1f3ec !important;
+  }
+}
+
 </style>
 
 }
