@@ -8,6 +8,35 @@
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
 <style>
+  @media (prefers-color-scheme: dark) {
+    /* 상세 분석 내역 (result > div 내부) */
+    #result > div {
+        /* 배경색을 다크모드에 맞게 어둡게 수정 */
+        background: linear-gradient(180deg, color-mix(in oklab, var(--emerald-700), transparent 70%), transparent 100%) !important;
+        border-color: rgba(52, 211, 153, .25) !important;
+    }
+
+    /* 상세 분석 내역 내부의 개별 단계 박스 */
+    #result > div div[style*="rgba(16,185,129,0.06)"],
+    #result > div div[style*="rgba(16,185,129,0.10)"] {
+        /* 배경색을 더 어둡고 선명하게 */
+        background: rgba(16, 185, 129, 0.15) !important;
+        border: 1px solid rgba(52, 211, 153, 0.2) !important;
+    }
+    
+    /* 복용 시 유의 사항 박스 */
+    #result > div:last-child > div:last-child {
+        /* 밝은 연두색 대신 어두운 계열로 변경 */
+        background: linear-gradient(135deg, #101815, #15221c) !important; 
+        border: 1.5px solid #059669 !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, .4) !important;
+    }
+
+    /* 모든 텍스트를 밝게 (결과 영역 한정) */
+    #result p, #result strong, #result .muted, #result .pill, #result .section-title {
+        color: var(--text) !important;
+    }
+}
 /* ===================== Design Tokens ===================== */
 :root{
 --bg:#f6fbf7;
