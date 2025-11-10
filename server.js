@@ -305,67 +305,23 @@ function pickCleanProductName({ host='', ogTitle='', h1s=[], titleTag='', html='
 
 /* ===== (여기까지 NEW) ===== */
 
-// 🔥 [강화] 다양한 User-Agent 풀 (쿠팡 차단 회피)
-const USER_AGENTS = [
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15',
-  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-];
-
-function getRandomUserAgent() {
-  return USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
-}
-
-// 🔥 [강화] 재시도 로직 추가
-async function fetchWithRetry(url, opts = {}, retries = 2) {
-  for (let i = 0; i <= retries; i++) {
-    try {
-      const res = await fetchWithTimeout(url, opts, 5000); // 타임아웃 2초 → 5초
-      if (res?.ok) return res;
-      console.log(`[Retry ${i + 1}/${retries + 1}] Failed to fetch ${url}: ${res?.status}`);
-    } catch (err) {
-      console.log(`[Retry ${i + 1}/${retries + 1}] Error fetching ${url}:`, err.message);
-      if (i === retries) throw err;
-      await new Promise(resolve => setTimeout(resolve, 500 * (i + 1))); // 지수 백오프
-    }
-  }
-  return null;
-}
-
 async function getHtmlFast(url, lang) {
   const norm = normalizeCommerceUrl(url);
   const cached = getCache(HTML_CACHE, `${lang}:${norm}`);
   if (cached) return cached;
-  
   try {
-    const headers = {
-      'User-Agent': getRandomUserAgent(), // 🔥 랜덤 User-Agent
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-      'Accept-Language': acceptLanguageHeader(lang),
-      'Accept-Encoding': 'gzip, deflate, br',
-      'Connection': 'keep-alive',
-      'Upgrade-Insecure-Requests': '1',
-      'Cache-Control': 'max-age=0',
-    };
-    
-    // 🔥 쿠팡은 Referer 헤더를 중요하게 봄
-    const urlObj = new URL(norm);
-    if (urlObj.hostname.includes('coupang.com')) {
-      headers['Referer'] = 'https://www.coupang.com/';
-      headers['Origin'] = 'https://www.coupang.com';
-    }
-    
-    const res = await fetchWithRetry(norm, { headers }, 1); // 1번 재시도
+    const res = await fetchWithTimeout(norm, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 11; SM-G990N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36',
+        'Accept-Language': acceptLanguageHeader(lang),
+      },
+    }, 2000);
     if (res?.ok) {
       const html = await res.text();
       setCache(HTML_CACHE, `${lang}:${norm}`, html);
       return html;
     }
-  } catch (err) {
-    console.error(`[getHtmlFast] Failed to fetch ${url}:`, err.message);
-  }
+  } catch {}
   return null;
 }
 async function extractCommerceContext(url, lang) {
@@ -926,28 +882,23 @@ ${sourceForPostCheck}
 
       systemInstructionText = PROMPT[lang].base(productInfo) + '\n' + PROMPT[lang].cmSys + '\n' + PROMPT[lang].ytProductAd;
       
-      // 🔥 [최종 강화] 쿠팡 링크는 제품명 추출이 어려우므로, AI가 *반드시* URL 전체를 검색하도록 강제
-      const isCoupang = productInfo.toLowerCase().includes('coupang.com');
-      const searchHint = isCoupang 
-        ? `\n🔥🔥🔥 [쿠팡 링크 경고] 이 URL은 JavaScript로 렌더링되므로, SOURCE_TEXT_HINT에 제품명이 비어있거나 "쇼핑 페이지"만 있을 가능성이 높습니다. *절대로* SOURCE_TEXT_HINT만 믿지 말고, 아래 URL을 Google Search로 *반드시* 검색하여 정확한 제품명을 찾으세요. 검색하지 않으면 분석이 실패합니다.\n`
-        : `\n⚠️ SOURCE_TEXT_HINT에 제품명이 없거나 불명확하면, Google Search를 사용하세요.\n`;
-      
+      // 🔥 [강화된 프롬프트] AI에게 URL 검색을 명확하게 지시하고, 제품명이 없으면 *반드시* 검색하도록 강제
       userText = `
 [CRITICAL INSTRUCTION - 최우선 작업]
-${searchHint}
+
 🔥 1단계: 아래 SOURCE_TEXT_HINT를 확인하여 "PRODUCT_NAME" 필드가 비어있거나 불명확한지 체크하세요.
 
 🔥 2단계: 만약 제품명이 비어있거나 "쇼핑 페이지", "Shopping Page", 또는 URL만 있다면, 
    다음 URL을 Google Search 도구로 *반드시* 검색하세요:
    URL: ${productInfo}
-   
-   검색 쿼리 예시: "${productInfo}" 또는 "쿠팡 ${productInfo.split('/').pop()}"
 
 🔥 3단계: 검색 결과에서 이 URL에 해당하는 **정확한 제품명**을 찾으세요.
 
 🔥 4단계: 찾은 제품명을 다음 필드에 입력하세요:
    - "productInfo" 필드
    - "step1_identification.result" 필드
+
+⚠️ 중요: SOURCE_TEXT_HINT는 참고용입니다. 제품명이 명확하지 않으면 *반드시* Google Search로 확인하세요.
 
 [SOURCE_TEXT_HINT - 참고용]
 ${sourceForPostCheck}
