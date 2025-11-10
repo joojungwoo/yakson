@@ -305,23 +305,80 @@ function pickCleanProductName({ host='', ogTitle='', h1s=[], titleTag='', html='
 
 /* ===== (여기까지 NEW) ===== */
 
+// 🔥 [강화] 다양한 User-Agent 풀 (쿠팡 차단 회피)
+const USER_AGENTS = [
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15',
+  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+];
+
+function getRandomUserAgent() {
+  return USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
+}
+
+// 🔥 [강화] 재시도 로직 추가
+async function fetchWithRetry(url, opts = {}, retries = 2) {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const res = await fetchWithTimeout(url, opts, 5000); // 타임아웃 2초 → 5초
+      if (res?.ok) return res;
+      console.log(`[Retry ${i + 1}/${retries + 1}] Failed to fetch ${url}: ${res?.status}`);
+    } catch (err) {
+      console.log(`[Retry ${i + 1}/${retries + 1}] Error fetching ${url}:`, err.message);
+      if (i === retries) throw err;
+      await new Promise(resolve => setTimeout(resolve, 500 * (i + 1))); // 지수 백오프
+    }
+  }
+  return null;
+}
+
 async function getHtmlFast(url, lang) {
   const norm = normalizeCommerceUrl(url);
   const cached = getCache(HTML_CACHE, `${lang}:${norm}`);
   if (cached) return cached;
+  
   try {
-    const res = await fetchWithTimeout(norm, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Linux; Android 11; SM-G990N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36',
-        'Accept-Language': acceptLanguageHeader(lang),
-      },
-    }, 2000);
+    const headers = {
+      'User-Agent': getRandomUserAgent(), // 🔥 랜덤 User-Agent
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+      'Accept-Language': acceptLanguageHeader(lang),
+      'Accept-Encoding': 'gzip, deflate, br',
+      'Connection': 'keep-alive',
+      'Upgrade-Insecure-Requests': '1',
+      'Cache-Control': 'max-age=0',
+      'Sec-Fetch-Dest': 'document',
+      'Sec-Fetch-Mode': 'navigate',
+      'Sec-Fetch-Site': 'none',
+      'Sec-Fetch-User': '?1',
+    };
+    
+    // 🔥 쿠팡은 Referer 헤더를 중요하게 봄
+    const urlObj = new URL(norm);
+    if (urlObj.hostname.includes('coupang.com')) {
+      headers['Referer'] = 'https://www.coupang.com/';
+      headers['Origin'] = 'https://www.coupang.com';
+      // 🔥 쿠팡 쿠키 추가 (세션 유지)
+      headers['Cookie'] = 'PCID=dummy; overrideAbTestGroup=dummy;';
+    }
+    
+    const res = await fetchWithRetry(norm, { headers }, 2); // 🔥 2번 재시도로 증가
     if (res?.ok) {
       const html = await res.text();
+      
+      // 🔥 [강화] HTML이 너무 짧으면 (CSR 페이지) null 반환
+      if (html.length < 500) {
+        console.log(`[getHtmlFast] HTML too short (${html.length} chars), likely CSR page: ${url}`);
+        return null;
+      }
+      
       setCache(HTML_CACHE, `${lang}:${norm}`, html);
       return html;
     }
-  } catch {}
+  } catch (err) {
+    console.error(`[getHtmlFast] Failed to fetch ${url}:`, err.message);
+  }
   return null;
 }
 async function extractCommerceContext(url, lang) {
@@ -467,8 +524,62 @@ const B_TIER_KNOWN_BRANDS = {
   '한미양행': ['한미양행'],
 };
 
+// 🔥 [신규] OTC-Tier: 잘 알려진 일반의약품 (95점 이상 보장)
+const OTC_MEDICINES = {
+  '타이레놀': ['타이레놀', 'Tylenol', '타이레놀이알'],
+  '게보린': ['게보린', 'Gevorin'],
+  '펜잘': ['펜잘', 'Fenzal', 'Fenzal Q'],
+  '판피린': ['판피린', 'Panpyrin'],
+  '아스피린': ['아스피린', 'Aspirin', '바이엘 아스피린'],
+  '어린이타이레놀': ['어린이타이레놀', '어린이 타이레놀'],
+  '부루펜': ['부루펜', 'Brufen'],
+  '이지엔6': ['이지엔6', 'EaseN6', '이지엔'],
+  '판콜': ['판콜', 'Pancol'],
+  '콜대원': ['콜대원'],
+  '코푸시럽': ['코푸시럽', '코푸'],
+  '베아제': ['베아제', 'Beazyme'],
+  '훼스탈': ['훼스탈', 'Festal'],
+  '닥터베아제': ['닥터베아제', '닥터 베아제'],
+  '탈모논': ['탈모논'],
+  '게보린쿨': ['게보린쿨', '게보린 쿨'],
+  '애니펜': ['애니펜'],
+  '어린이부루펜': ['어린이부루펜', '어린이 부루펜'],
+  '훼라민큐': ['훼라민큐', '훼라민Q'],
+  '삐콤씨': ['삐콤씨'],
+  '비맥스': ['비맥스', 'Bemax'],
+  '센시아': ['센시아', 'Sensia'],
+  '벤포벨': ['벤포벨'],
+  '케라시스': ['케라시스', 'Kerasys'],
+  '마데카솔': ['마데카솔', 'Madecassol'],
+  '후시딘': ['후시딘', 'Fucidin'],
+  '박트로반': ['박트로반', 'Bactroban'],
+  '듀오덤': ['듀오덤', 'Duoderm'],
+  '메디폼': ['메디폼', 'Medifoam'],
+  '이지엔6애니': ['이지엔6애니'],
+  '그날엔': ['그날엔'],
+  '탁센': ['탁센'],
+};
+
+// 🔥 [신규] 위험 물질 블랙리스트 (0점 처리)
+const BLACKLIST_KEYWORDS = [
+  // 마약류
+  '메스암페타민', '필로폰', '히로뽕', '대마초', '코카인', '헤로인', '엑스터시', 'LSD', 'MDMA',
+  '펜타닐', 'GHB', '케타민', '크랙', '아편', '모르핀', '옥시코돈', '펜터민',
+  // 향정신성 의약품 (불법 유통)
+  '졸피뎀', '자낙스', 'Xanax', '알프라졸람', '로라제팜', '클로나제팜', '리보트릴',
+  // 불법 다이어트약
+  '살빼는약', '마약다이어트', '비만약불법', '펜터민불법',
+  // 가짜 의약품
+  '가짜비아그라', '짝퉁', '위조의약품', '밀수',
+  // 명확한 사기
+  '100%완치', '암완치', 'HIV완치', '당뇨완치', '기적의약',
+  // 검색 안 되는 제품 키워드
+  '제품을 찾을 수 없', '검색 결과 없', 'No results found', '존재하지 않는 제품',
+];
+
 const A_TIER = new Set(Object.keys(BRAND_ALIASES));
 const B_TIER_KNOWN = new Set(Object.keys(B_TIER_KNOWN_BRANDS));
+const OTC_TIER = new Set(Object.keys(OTC_MEDICINES)); // 🔥 OTC 티어 추가
 
 // 브랜드 정규화 함수 - 다양한 표기를 표준 브랜드명으로 통일
 function canonicalizeBrandFromText(sourceText) {
@@ -485,13 +596,31 @@ function canonicalizeBrandFromText(sourceText) {
       if (t.includes(a.toLowerCase())) return canon;
     }
   }
+  // 🔥 OTC 일반의약품 체크
+  for (const [canon, aliases] of Object.entries(OTC_MEDICINES)) {
+    for (const a of aliases) {
+      if (t.includes(a.toLowerCase())) return canon;
+    }
+  }
   return null;
+}
+
+// 🔥 [신규] 블랙리스트 체크 함수
+function isBlacklisted(sourceText) {
+  const t = (sourceText || '').toLowerCase();
+  for (const keyword of BLACKLIST_KEYWORDS) {
+    if (t.includes(keyword.toLowerCase())) {
+      return { isBlacklisted: true, keyword };
+    }
+  }
+  return { isBlacklisted: false, keyword: null };
 }
 
 // 브랜드 티어 판정
 function getBrandTier(brand) {
   if (!brand) return 'C'; // 브랜드 없음
   if (A_TIER.has(brand)) return 'A'; // 대기업
+  if (OTC_TIER.has(brand)) return 'OTC'; // 🔥 일반의약품
   if (B_TIER_KNOWN.has(brand)) return 'B'; // 알려진 유명 브랜드
   return 'C'; // 일반 브랜드
 }
@@ -524,9 +653,10 @@ const AD_TYPE_CRITERIA = {
   product_itself: {
     name: '제품 정보',
     description: '광고가 아닌 제품 자체의 공식 정보 분석',
-    // 🔥 점수 보정 기준: A-Tier(대기업) 98점, B-Tier Known(유명 브랜드) 95점 목표
+    // 🔥 점수 보정 기준: A-Tier(대기업) 98점, OTC(일반의약품) 95점, B-Tier Known(유명 브랜드) 95점 목표
     minScoreFloor: {
       A_tier: { step2: 29, step3: 39, step4: 10, step5: 15, step6: 0, step7: 0, step8: 5 }, // 98
+      OTC_tier: { step2: 28, step3: 38, step4: 10, step5: 14, step6: 0, step7: 0, step8: 5 }, // 95 🔥 일반의약품
       B_tier_known: { step2: 28, step3: 37, step4: 10, step5: 14, step6: 0, step7: 0, step8: 5 }, // 94 -> 95+ 목표
       B_tier: { step2: 20, step3: 30, step4: 7, step5: 12, step6: 0, step7: 0, step8: 4 }, // 73
     }
@@ -537,6 +667,7 @@ const AD_TYPE_CRITERIA = {
     description: '기업 이미지, 철학, 역사 중심의 광고',
     minScoreFloor: {
       A_tier: { step2: 24, step3: 15, step4: 24, step5: 10, step6: 15, step7: 5, step8: 5 }, // 98
+      OTC_tier: { step2: 23, step3: 14, step4: 23, step5: 10, step6: 15, step7: 5, step8: 5 }, // 95 🔥 일반의약품
       B_tier_known: { step2: 23, step3: 14, step4: 23, step5: 10, step6: 15, step7: 5, step8: 5 }, // 95
       B_tier: { step2: 15, step3: 10, step4: 16, step5: 8, step6: 10, step7: 3, step8: 4 }, // 66
     }
@@ -548,6 +679,7 @@ const AD_TYPE_CRITERIA = {
     description: '특정 제품의 효능, 성분, 사용법 중심의 광고',
     minScoreFloor: {
       A_tier: { step2: 20, step3: 30, step4: 20, step5: 20, step6: 5, step7: 3, step8: 2 }, // 100 (상한선)
+      OTC_tier: { step2: 19, step3: 29, step4: 19, step5: 19, step6: 5, step7: 3, step8: 2 }, // 96 -> 95+ 🔥 일반의약품
       B_tier_known: { step2: 19, step3: 29, step4: 19, step5: 19, step6: 5, step7: 3, step8: 2 }, // 96 -> 95+ 목표
       B_tier: { step2: 12, step3: 20, step4: 15, step5: 14, step6: 3, step7: 2, step8: 1 }, // 67
     }
@@ -559,6 +691,7 @@ const AD_TYPE_CRITERIA = {
     description: '광고 유형이 불명확한 경우',
     minScoreFloor: {
       A_tier: { step2: 20, step3: 25, step4: 20, step5: 20, step6: 8, step7: 4, step8: 3 }, // 100 (상한선)
+      OTC_tier: { step2: 19, step3: 24, step4: 19, step5: 19, step6: 8, step7: 4, step8: 3 }, // 96 -> 95+ 🔥 일반의약품
       B_tier_known: { step2: 19, step3: 24, step4: 19, step5: 19, step6: 8, step7: 4, step8: 3 }, // 96 -> 95+ 목표
       B_tier: { step2: 10, step3: 16, step4: 14, step5: 13, step6: 5, step7: 2, step8: 1 }, // 61
     }
@@ -682,6 +815,7 @@ function detectTrustFlags(sourceText='') {
     isOfficialChannel: (isOfficialWord || brandInChannel || brandInTitle), 
     isTrustedSeller: trustedSeller,
     isMajorCorp: tier === 'A',
+    isOTC: tier === 'OTC', // 🔥 일반의약품 플래그 추가
     isKnownBrand: tier === 'B' // 🔥 유명 브랜드 플래그 추가
   };
 }
@@ -703,16 +837,18 @@ function applyAdTypeTrustFloors(steps, flags, adType, sourceText) {
   
   const criteria = AD_TYPE_CRITERIA[adType] || AD_TYPE_CRITERIA.unknown;
   
-  // 🔥 티어 우선순위: A-Tier(대기업) > B-Tier Known(유명 브랜드) > B-Tier(일반)
+  // 🔥 티어 우선순위: A-Tier(대기업) > OTC(일반의약품) > B-Tier Known(유명 브랜드) > B-Tier(일반)
   let tierKey = 'B_tier'; // 기본값
   if (flags.isMajorCorp) {
     tierKey = 'A_tier'; // 대기업
+  } else if (flags.isOTC) {
+    tierKey = 'OTC_tier'; // 일반의약품
   } else if (flags.isKnownBrand) {
     tierKey = 'B_tier_known'; // 유명 브랜드
   }
   
-  // 🔥 대기업, 유명 브랜드, 공식 채널, 신뢰 판매처일 경우 점수 보정
-  if (flags.isMajorCorp || flags.isKnownBrand || flags.isOfficialChannel || flags.isTrustedSeller) {
+  // 🔥 대기업, 일반의약품, 유명 브랜드, 공식 채널, 신뢰 판매처일 경우 점수 보정
+  if (flags.isMajorCorp || flags.isOTC || flags.isKnownBrand || flags.isOfficialChannel || flags.isTrustedSeller) {
     const floors = criteria.minScoreFloor[tierKey];
     
     if (floors) {
@@ -737,6 +873,7 @@ function applyAdTypeTrustFloors(steps, flags, adType, sourceText) {
         if (!steps[k].reason || steps[k].reason.includes("0점")) {
           let tierLabel = '일반';
           if (flags.isMajorCorp) tierLabel = '대기업';
+          else if (flags.isOTC) tierLabel = '일반의약품 (OTC)';
           else if (flags.isKnownBrand) tierLabel = '유명 브랜드';
           else if (flags.isOfficialChannel) tierLabel = '공식 채널';
           
@@ -751,6 +888,36 @@ function applyAdTypeTrustFloors(steps, flags, adType, sourceText) {
 function normalizeOutput(raw, lang='ko', sourceText='', adType='unknown') {
   // adType은 AI의 추측(raw.adType)이 아닌, *내가* 판단한 adType을 우선 사용
   const finalAdType = adType || raw?.adType || 'unknown';
+  
+  // 🔥 [블랙리스트 체크] 위험 물질/마약류/검색 불가 제품은 0점 처리
+  const blacklistCheck = isBlacklisted(sourceText + ' ' + (raw?.productInfo || ''));
+  if (blacklistCheck.isBlacklisted) {
+    return {
+      productInfo: raw?.productInfo || '위험 제품',
+      productType: '위험 물질 감지',
+      totalScore: 0,
+      overallSafety: lang==='en'?'Risk':'위험',
+      safetyReason: `이 제품은 위험 물질 또는 불법 제품으로 판단되었습니다. (키워드: ${blacklistCheck.keyword})`,
+      precautions: '절대 구매하거나 복용하지 마세요. 불법 의약품일 가능성이 있습니다.',
+      analysisDetails: {
+        step1_identification: { result: '위험 제품', reason: '블랙리스트 키워드 감지', evidence: [blacklistCheck.keyword] },
+        step2_senderScore: { score: 0, reason: '위험 물질로 판정', evidence: [] },
+        step3_productScore: { score: 0, reason: '위험 물질로 판정', evidence: [] },
+        step4_expressionScore: { score: 0, reason: '위험 물질로 판정', evidence: [] },
+        step5_efficacyScore: { score: 0, reason: '위험 물질로 판정', evidence: [] },
+        step6_actionScore: { score: 0, reason: '위험 물질로 판정', evidence: [] },
+        step7_visualScore: { score: 0, reason: '위험 물질로 판정', evidence: [] },
+        step8_financialScore: { score: 0, reason: '위험 물질로 판정', evidence: [] },
+      },
+      isMfdsRegistered: false,
+      isGmpCertified: false,
+      isOrganic: false,
+      mainIngredients: [],
+      targetAudience: [],
+      adType: finalAdType,
+      stepNames: STEP_NAMES[finalAdType] || STEP_NAMES.unknown,
+    };
+  }
   
   const base = {
     productInfo: raw?.productInfo || '',
@@ -818,7 +985,7 @@ function normalizeOutput(raw, lang='ko', sourceText='', adType='unknown') {
   if (!base.productInfo) base.productInfo = d.step1_identification.result;
 
 
-  return { ...base, analysisDetails: d, isMajorCorp: flags.isMajorCorp, isKnownBrand: flags.isKnownBrand }; // isMajorCorp, isKnownBrand 플래그를 HTML로 전달
+  return { ...base, analysisDetails: d, isMajorCorp: flags.isMajorCorp, isKnownBrand: flags.isKnownBrand, isOTC: flags.isOTC }; // 🔥 isOTC 플래그 추가
 }
 
 /* ========================= 분석 엔드포인트 (🔥 수정) ========================= */
@@ -882,23 +1049,28 @@ ${sourceForPostCheck}
 
       systemInstructionText = PROMPT[lang].base(productInfo) + '\n' + PROMPT[lang].cmSys + '\n' + PROMPT[lang].ytProductAd;
       
-      // 🔥 [강화된 프롬프트] AI에게 URL 검색을 명확하게 지시하고, 제품명이 없으면 *반드시* 검색하도록 강제
+      // 🔥 [최종 강화] 쿠팡 링크는 제품명 추출이 어려우므로, AI가 *반드시* URL 전체를 검색하도록 강제
+      const isCoupang = productInfo.toLowerCase().includes('coupang.com');
+      const searchHint = isCoupang 
+        ? `\n🔥🔥🔥 [쿠팡 링크 경고] 이 URL은 JavaScript로 렌더링되므로, SOURCE_TEXT_HINT에 제품명이 비어있거나 "쇼핑 페이지"만 있을 가능성이 높습니다. *절대로* SOURCE_TEXT_HINT만 믿지 말고, 아래 URL을 Google Search로 *반드시* 검색하여 정확한 제품명을 찾으세요. 검색하지 않으면 분석이 실패합니다.\n`
+        : `\n⚠️ SOURCE_TEXT_HINT에 제품명이 없거나 불명확하면, Google Search를 사용하세요.\n`;
+      
       userText = `
 [CRITICAL INSTRUCTION - 최우선 작업]
-
+${searchHint}
 🔥 1단계: 아래 SOURCE_TEXT_HINT를 확인하여 "PRODUCT_NAME" 필드가 비어있거나 불명확한지 체크하세요.
 
 🔥 2단계: 만약 제품명이 비어있거나 "쇼핑 페이지", "Shopping Page", 또는 URL만 있다면, 
    다음 URL을 Google Search 도구로 *반드시* 검색하세요:
    URL: ${productInfo}
+   
+   검색 쿼리 예시: "${productInfo}" 또는 "쿠팡 ${productInfo.split('/').pop()}"
 
 🔥 3단계: 검색 결과에서 이 URL에 해당하는 **정확한 제품명**을 찾으세요.
 
 🔥 4단계: 찾은 제품명을 다음 필드에 입력하세요:
    - "productInfo" 필드
    - "step1_identification.result" 필드
-
-⚠️ 중요: SOURCE_TEXT_HINT는 참고용입니다. 제품명이 명확하지 않으면 *반드시* Google Search로 확인하세요.
 
 [SOURCE_TEXT_HINT - 참고용]
 ${sourceForPostCheck}
@@ -1005,7 +1177,9 @@ app.listen(port, () => {
   console.log(`🚀 약손 서버가 http://localhost:${port} 에서 실행 중입니다.`);
   console.log(`[분석 준비 완료]`);
   console.log(`[대기업 브랜드 ${A_TIER.size}개 등록됨]`);
-  console.log(`[유명 브랜드 ${B_TIER_KNOWN.size}개 등록됨 (90점 이상 목표)]`); // 🔥 추가
+  console.log(`[일반의약품(OTC) ${OTC_TIER.size}개 등록됨 (95점 이상 보장)]`); // 🔥 추가
+  console.log(`[유명 브랜드 ${B_TIER_KNOWN.size}개 등록됨 (95점 이상 목표)]`);
+  console.log(`[위험 물질 블랙리스트 ${BLACKLIST_KEYWORDS.length}개 등록됨 (0점 처리)]`); // 🔥 추가
   console.log(`[광고 유형별 평가 기준: product_itself, brand_ad, product_ad, unknown]`);
   console.log(`[API KEY: ${process.env.GEMINI_API_KEY ? '로드됨' : '없음 (환경 변수 확인 필요)'}]`);
 });

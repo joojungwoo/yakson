@@ -54,8 +54,8 @@ html.font-large{ --base-font-size: 18px; }
 --panel:rgba(16,24,21,.80);
 --panel-solid:#101815;
 --glass:rgba(16,24,21,.60);
---text:#e7f1ec;
---muted:#9fb2a9;
+--text:#e7f1ec; /* 💡 다크모드 텍스트 색상 보정 */
+--muted:#9fb2a9; /* 💡 다크모드 보조 텍스트 색상 보정 */
 --border:rgba(52,211,153,.14);
 --shadow-soft:0 30px 80px rgba(0,0,0,.55), 0 10px 30px rgba(0,0,0,.35);
 --shadow-hover:0 40px 100px rgba(0,0,0,.65), 0 15px 40px rgba(0,0,0,.45);
@@ -287,76 +287,93 @@ opacity:0.08;
 }
 
 /* ===================== Controls ===================== */
+/* ===================== Controls ===================== */
 .input-wrap{
-display:grid;
-grid-template-columns:1fr auto;
-gap:14px;
-align-items:center;
-margin-bottom:12px;
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:14px;
+    align-items:center;
+    margin-bottom:12px;
 }
 .field{ 
-position:relative;
-animation:fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
+    position:relative;
+    animation:fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
 }
 @keyframes fadeInUp{
-from{ opacity:0; transform:translateY(10px)}
-to{ opacity:1; transform:translateY(0)}
+    from{ opacity:0; transform:translateY(10px)}
+    to{ opacity:1; transform:translateY(0)}
 }
 .field input{
-width:100%;
-padding:18px 20px 18px 56px;
-border-radius:18px;
-background:linear-gradient(180deg, var(--panel-solid), color-mix(in oklab, var(--panel-solid), transparent 4%));
-border:1.5px solid var(--border);
-color:var(--text);
-box-shadow:inset 0 -1px 0 rgba(16,185,129,.06), 0 4px 12px rgba(16,185,129,.04);
-transition:all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-font-size:1rem;
-font-weight:500;
+    width:100%;
+    /* 💡 기존 왼쪽 패딩을 60px로 늘려 아이콘과 플레이스홀더 사이의 충분한 간격을 확보 */
+    padding:18px 20px 18px 60px; 
+    border-radius:18px;
+    background:linear-gradient(180deg, var(--panel-solid), color-mix(in oklab, var(--panel-solid), transparent 4%));
+    border:1.5px solid var(--border);
+    color:var(--text);
+    box-shadow:inset 0 -1px 0 rgba(16,185,129,.06), 0 4px 12px rgba(16,185,129,.04);
+    transition:all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size:1rem;
+    font-weight:500;
 }
 .field input::placeholder{
-color:var(--muted);
-opacity:0.7;
+    /* 💡 플레이스홀더의 왼쪽 패딩은 제거하고, 기본 색상 및 투명도 유지 */
+    color:var(--muted);
+    opacity:0.7; /* 다크/라이트 모드에서 기본 투명도 유지 */
 }
 .field input:focus{
-outline:none;
-border-color:var(--emerald-500);
-box-shadow:var(--ring), 0 10px 30px rgba(16,185,129,.20);
-transform:translateY(-2px);
+    outline:none;
+    border-color:var(--emerald-500);
+    box-shadow:var(--ring), 0 10px 30px rgba(16,185,129,.20);
+    transform:translateY(-2px);
 }
 .lefticon{
-position:absolute;
-left:18px;
-top:50%;
-transform:translateY(-50%);
-color:var(--emerald-600);
-opacity:.95;
-font-size:20px;
-transition:transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-pointer-events:none;
+    position:absolute;
+    right:22px; /* ← 왼쪽 대신 오른쪽으로 변경 */
+    top:50%;
+    transform:translateY(-50%);
+    color:var(--emerald-600);
+    opacity:.95;
+    font-size:20px;
+    transition:transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events:none;
 }
+.field input{
+    width:100%;
+    padding:18px 60px 18px 20px; /* ← 오른쪽 여백을 넓히고 왼쪽은 줄이기 */
+    border-radius:18px;
+    background:linear-gradient(180deg, var(--panel-solid), color-mix(in oklab, var(--panel-solid), transparent 4%));
+    border:1.5px solid var(--border);
+    color:var(--text);
+    box-shadow:inset 0 -1px 0 rgba(16,185,129,.06), 0 4px 12px rgba(16,185,129,.04);
+    transition:all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size:1rem;
+    font-weight:500;
+}
+
 .field input:focus + .lefticon,
 .field:hover .lefticon{
-transform:translateY(-50%) scale(1.12);
+    transform:translateY(-50%) scale(1.12);
 }
 .btn-primary{
-min-width:160px;
-height:56px;
-padding:0 24px;
-border-radius:18px;
-border:1.5px solid color-mix(in oklab, var(--emerald-600), black 10%);
-background:
-linear-gradient(135deg, color-mix(in oklab, var(--emerald-500), white 16%), var(--emerald-600));
-color:#fff;
-font-weight:900;
-cursor:pointer;
-letter-spacing:.02em;
-font-size:1.02rem;
-box-shadow:0 18px 40px rgba(16,185,129,.36);
-transition:all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-position:relative;
-overflow:hidden;
+    min-width:160px;
+    height:56px;
+    padding:0 24px;
+    border-radius:18px;
+    border:1.5px solid color-mix(in oklab, var(--emerald-600), black 10%);
+    background:
+    linear-gradient(135deg, color-mix(in oklab, var(--emerald-500), white 16%), var(--emerald-600));
+    color:#fff;
+    font-weight:900;
+    cursor:pointer;
+    letter-spacing:.02em;
+    font-size:1.02rem;
+    box-shadow:0 18px 40px rgba(16,185,129,.36);
+    transition:all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position:relative;
+    overflow:hidden;
 }
+/* ... 이후 CSS 코드는 동일합니다. ... */
 .btn-primary::before{
 content:'';
 position:absolute;
@@ -1029,6 +1046,16 @@ font-size:15px;
 h1{
 font-size:22px;
 }
+@media (max-width:640px){
+  /* ... 기존 반응형 CSS ... */
+}  /* ← 이 '}' 바로 다음 줄에 붙여넣기 */
+
+/* ✅ 검색 아이콘이 텍스트를 가리지 않도록 층위만 조정 */
+.field input { position: relative; z-index: 1; }
+.lefticon    { z-index: 0; }
+
+</style>
+
 }
 </style>
 </head>
@@ -1671,8 +1698,9 @@ document.getElementById('feedbackForm').style.display='none';
 msg.style.display='none';
 },4000);
 }
-
 console.log('✅ All functions loaded');
+
+
 </script>
 </body>
 </html>
