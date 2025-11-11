@@ -493,6 +493,26 @@ const BRAND_ALIASES = {
   'P&G': ['P&G', 'Procter & Gamble'],
   '암웨이': ['암웨이', 'Amway'],
   '허벌라이프': ['허벌라이프', 'Herbalife'],
+  '한미사이언스': ['한미사이언스', 'Hanmi Science'],
+  '녹십자웰빙': ['녹십자웰빙', 'GC Wellbeing'],
+  '일동홀딩스': ['일동홀딩스', 'Ildong Holdings'],
+  'JW신약': ['JW신약', 'JW Shinyak'],
+  '대웅바이오': ['대웅바이오', 'Daewoong Bio'],
+  '코오롱생명과학': ['코오롱생명과학', 'Kolon Life Science'],
+  'SK바이오팜': ['SK바이오팜', 'SK Biopharm'],
+  '셀리버리': ['셀리버리', 'Cellivery'],
+  '휴온스': ['휴온스', 'Huons'],
+  '동화약품': ['동화약품', 'Dong Wha Pharm'],
+  '비타민하우스': ['비타민하우스', 'Vitamin House'],
+  '헬스원': ['헬스원', 'Health One'],
+  '바디프랜드헬스케어': ['바디프랜드헬스케어', 'Bodyfriend Healthcare'],
+  '더블유엠': ['더블유엠', 'WM Health'],
+  '닥터바이오': ['닥터바이오', 'Dr.Bio'],
+  '내추럴웨이브': ['내추럴웨이브', 'Natural Wave'],
+  '글로벌헬스케어': ['글로벌헬스케어', 'Global Healthcare'],
+  '헬씨굿즈': ['헬씨굿즈', 'Healthy Goods'],
+  '라이프케어코리아': ['라이프케어코리아', 'LifeCare Korea'],
+  '뉴젠헬스': ['뉴젠헬스', 'NewGen Health']
 };
 
 // B-Tier: 알려진 유명 브랜드 (90점 이상 목표)
@@ -546,7 +566,14 @@ const OTC_MEDICINES = {
   '게리딘': ['게리딘'],
   '록소닌S': ['록소닌','Loxonin','록소프로펜'],
   '볼타렌겔': ['볼타렌겔','Voltaren Gel','디클로페낙겔','Diclofenac Gel'],
-
+  '아세트아미노펜정': ['아세트아미노펜', 'Acetaminophen'],
+  '이부프로펜캡슐': ['이부프로펜', 'Ibuprofen'],
+  '나프록센정': ['나프록센', 'Naproxen'],
+  '아스피린코프': ['아스피린', 'Aspirin'],
+  '디클로페낙정': ['디클로페낙', 'Diclofenac'],
+  '케토프로펜정': ['케토프로펜', 'Ketoprofen'],
+  '메페남산캡슐': ['메페남산', 'Mefenamic Acid'],
+  '펜잘플러스정': ['펜잘 플러스', 'Fenzal Plus'],
   // ===== 감기·코감기·기침·목 =====
   '판콜': ['판콜','Pancol','판콜에이','판콜에스','판콜아이'],
   '콜대원': ['콜대원','콜대원플러스','콜대원코프'],
@@ -563,11 +590,25 @@ const OTC_MEDICINES = {
   '우아밍': ['우아밍'],
   '코앤': ['코앤','CoAn'],
   '청심환': ['청심환'], // (의약품 취급 제품군 기준)
+  '판콜에이': ['판콜 에이', 'Pancol A'],
+  '데콜진': ['데콜진', 'Decolgen'],
+  '코푸시럽': ['코푸 시럽', 'Cough Syrup'],
+  '테라플루키즈': ['테라플루 키즈', 'Theraflu Kids'],
+  '엑티피드정': ['엑티피드', 'Actifed'],
+  '브론치큐시럽': ['브론치큐', 'Bronchi-Q Syrup'],
+  '코지엔': ['코지엔', 'CoZien'],
+  '씨콜드플러스': ['씨콜드 플러스', 'CCold Plus'],
   // 항히스타민(OTC)
   '지르텍': ['지르텍','Zyrtec','세티리진','Cetirizine'],
   '클라리틴': ['클라리틴','Claritin','로라타딘','Loratadine'],
   '알레그라': ['알레그라','Allegra','펙소페나딘','Fexofenadine'],
   '폴라민': ['폴라민','Chlorpheniramine','클로르페니라민'],
+  '지르텍정': ['지르텍 정', 'Cetirizine'],
+  '클라리틴정': ['클라리틴 정', 'Loratadine'],
+  '알레그라정': ['알레그라 정', 'Fexofenadine'],
+  '자이잘정': ['자이잘 정', 'Levocetirizine'],
+  '폴라민정': ['폴라민 정', 'Chlorpheniramine'],
+  '알레픽점안제': ['알레픽', 'Allergic Eye Drop'],
 
   // ===== 비강(점비제) / 충혈완화 =====
   '오트리빈': ['오트리빈','Otrivin','자일로메타졸린'],
@@ -581,6 +622,10 @@ const OTC_MEDICINES = {
   '아이톡': ['아이톡'],
   '알레픽': ['알레픽'], // 알러지 점안제 계열
   '크로모크롬': ['크로모글리산','Cromoglycate'],
+  '오트리빈스프레이': ['오트리빈 스프레이', 'Otrivin Nasal Spray'],
+  '리프레쉬인공눈물': ['리프레쉬 인공눈물', 'Refresh Eye Drops'],
+  '알레픽점안제': ['알레픽 점안제', 'Allepic Eye Drop'],
+  '크로모크롬점안액': ['크로모크롬 점안액', 'Cromoglycate Eye Drop'],
 
   // ===== 위장(소화·제산·위염·역류) =====
   '베아제': ['베아제','Beazyme'],
@@ -596,12 +641,22 @@ const OTC_MEDICINES = {
   '라니티딘대체OTC': ['파모티딘','Famotidine'],
   '오메프라졸OTC': ['오메프라졸','Omeprazole'], // 일부 국가는 Rx, 국내 OTC 전환제품 기준 표기
   '판토프라졸OTC': ['판토프라졸','Pantoprazole'],
+  '겔포스엠': ['겔포스 엠', 'Gelfos M'],
+  '알마겔플러스': ['알마겔 플러스', 'Almagel Plus'],
+  '훼스탈플러스': ['훼스탈 플러스', 'Festal Plus'],
+  '가스모틴정': ['가스모틴 정', 'Mosapride'],
+  '스멕타정': ['스멕타 정', 'Smecta'],
+  '개비스콘액': ['개비스콘 액', 'Gaviscon Liquid'],
 
   // ===== 설사(지사제) / 장내균제 =====
   '로페민': ['로페민','Loperamide','로페라마이드'],
   '스트렙토키나제OTC': ['비스무트계','Bismuth'], // 지사 성분류 보조 인식
   '비오플': ['비오플','Bioflor','사카로마이세스','Saccharomyces boulardii'],
   '유산균지사OTC': ['바실루스서브틸리스','Bacillus subtilis'],
+  '로페민캡슐': ['로페민 캡슐', 'Loperamide'],
+  '비오플캡슐': ['비오플 캡슐', 'Bioflor'],
+  '유산균지사제': ['유산균 지사제', 'Probiotic Diarrhea'],
+  '비스무트제제': ['비스무트 제제', 'Bismuth Compound'],
 
   // ===== 변비(완하제) =====
   '둘코락스': ['둘코락스','Dulcolax','비사코딜','Bisacodyl'],
@@ -614,6 +669,10 @@ const OTC_MEDICINES = {
   // ===== 멀미(진토·멀미) =====
   '보나링': ['보나링','Bonaring','디멘하이드리네이트','Dimenhydrinate'],
   '메토클로프라미드OTC': ['메토클로프라미드','Metoclopramide'], // 국가별 규제 상이, OTC 취급 제품 인식용
+  '보나링정': ['보나링 정', 'Dimenhydrinate'],
+  '시프로헵타딘캡슐': ['시프로헵타딘 캡슐', 'Cyproheptadine'],  // 예시
+  '메토클로프라미드정': ['메토클로프라미드 정', 'Metoclopramide'],
+  '멀미패치': ['멀미 패치', 'Motion Sickness Patch'],
 
   // ===== 피부 외용(항생·항진균·소염·상처) =====
   '마데카솔': ['마데카솔','Madecassol'],
