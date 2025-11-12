@@ -1690,7 +1690,7 @@ ingredientBadgesHtml +
 otherBadgesHtml +
 '</div>' +
 '<div class="section-title" style="color:' + safetyColor + '; font-size:1.2rem">' +
-'🚨 최종 신뢰도: <strong class="' + safetyClass + '">' + data.overallSafety + '</strong>' +
+'최종 신뢰도: <strong class="' + safetyClass + '">' + data.overallSafety + '</strong>' +
 '</div>' +
 '<p style="display:flex;gap:12px;align-items:center;justify-content:center;margin:12px 0 18px">' +
 '<span class="score-badge"><i class="fa fa-check-circle"></i> ' + data.totalScore + '/100</span>' +
@@ -1707,6 +1707,10 @@ otherBadgesHtml +
 '<div class="button-group">' +
 '<button class="btn-primary" style="background:linear-gradient(135deg,#22c55e,#16a30a); border-color:transparent" onclick="alert(\'저장 기능 개발 중\')"><i class="fa fa-share-alt"></i> 결과 저장 / 공유</button>' +
 '<button class="btn-primary" style="background:linear-gradient(135deg,#9ca3af,#6b7280)" onclick="showFeedbackForm(\'' + (data.productInfo || productInfo).replace(/'/g, "\\'") + '\')">결과가 정확하지 않나요?</button>' +
+'</div>' +
+'<div style="margin-top:20px; padding:16px; background:linear-gradient(135deg, #fff7ed, #ffedd5); border:1.5px solid #fb923c; border-radius:14px; text-align:center; box-shadow:0 4px 12px rgba(251,146,60,.15); transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1)" onmouseover="this.style.boxShadow=\'0 6px 18px rgba(251,146,60,.25)\'; this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.boxShadow=\'0 4px 12px rgba(251,146,60,.15)\'; this.style.transform=\'translateY(0)\'">' +
+'<p style="font-size:0.95rem; font-weight:700; color:#7c2d12; margin-bottom:10px"><i class="fa fa-shopping-cart"></i> 검증된 구매링크가 필요하신가요?</p>' +
+'<button class="btn-primary" style="min-width:auto; height:42px; padding:0 20px; font-size:0.92rem; background:linear-gradient(135deg,#fb923c,#f97316); border-color:#ea580c" onclick="alert(\'쿠팡 추천 링크 기능 준비 중입니다!\')"><i class="fa fa-external-link"></i> 쿠팡 추천 링크 가기</button>' +
 '</div>';
 
 document.getElementById('result').scrollIntoView({behavior:'smooth',block:'start'});
