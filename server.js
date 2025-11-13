@@ -1506,6 +1506,33 @@ ${sourceForPostCheck}
     );
   }
 });
+// -----------------------------
+// Gemini API Retry Wrapper
+// -----------------------------
+async function callGeminiWithRetry(model, payload, maxRetries = 3) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await model.generateContent(payload);
+    } catch (err) {
+
+      // 재시도 가능한 에러인지 확인
+      const retryable =
+        err?.status === 503 ||
+        err?.status === 500 ||
+        err?.status === 429 ||
+        err?.error?.status === "UNAVAILABLE";
+
+      if (!retryable || attempt === maxRetries) {
+        console.error("❌ Gemini API 오류:", err);
+        throw err; // 더 이상 못하면 그대로 throw
+      }
+
+      const waitMs = 1000 * attempt; // 1초 → 2초 → 3초 점진적 증가
+      console.warn(`⚠️ Gemini API 재시도 (${attempt}/${maxRetries})... ${waitMs}ms 대기`);
+      await new Promise(res => setTimeout(res, waitMs));
+    }
+  }
+}
 
 /* ============================ 서버 시작 ============================ */
 
